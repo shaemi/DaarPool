@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دار پول - مدیریت مالی شخصی</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="دار پول">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://placehold.co/180x180/34C759/ffffff?text=💰">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS شما (بدون تغییر) */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", "Arial", sans-serif; background-color: #f2f2f7; color: #000; display: flex; justify-content: center; align-items: flex-start; padding: 20px; min-height: 100vh; }
+        main { width: 100%; max-width: 800px; }
+        h1 { text-align: right; font-size: 34px; font-weight: 700; color: #000; margin-bottom: 20px; }
+        h2 { text-align: right; font-size: 22px; font-weight: 600; color: #000; margin-bottom: 15px; padding-right: 5px; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background-color: #ffffff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 15px; color: #555; padding-right: 5px; }
+        .input-group input[type="text"], #goal textarea { width: calc(100% - 30px); padding: 12px 15px; border: 1px solid #c8c8cc; border-radius: 8px; font-size: 16px; background-color: #fcfcfc; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; font-size: 17px; transition: opacity 0.2s; }
+        button:hover { opacity: 0.85; }
+        #btn-add-income { background-color: #34C759; }
+        #btn-add-expense { background-color: #FF3B30; }
+        #report { padding-top: 10px; padding-bottom: 10px; }
+        #report p { display: flex; justify-content: space-between; border-bottom: 1px solid #e5e5ea; padding: 14px 5px; margin: 0; font-size: 17px; }
+        #report p:last-child { border-bottom: none; }
+        #report p span:first-child { font-weight: 500; color: #333; }
+        #balance { font-weight: 600; font-size: 18px; }
+        #goal textarea { min-height: 80px; resize: vertical; }
+        .backup-section { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-secondary { background-color: #007AFF; }
+        .btn-tertiary { background-color: #8E8E93; }
+        .btn-danger { background-color: #FF3B30; }
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { grid-template-columns: 1fr; gap: 15px; }
+            h1 { font-size: 30px; margin-bottom: 15px; }
+            h2 { font-size: 20px; }
+            .backup-section { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <h1>💰 دار پول</h1>
+        
+        <div class="container">
+            <section class="card" id="inputs">
+                <h2>ثبت تراکنش</h2>
+                <div class="input-group">
+                    <label for="income-amount">مبلغ درآمد (تومان)</label>
+                    <input type="text" id="income-amount" placeholder="مثلا: ۵۰۰۰۰۰">
+                </div>
+                <button id="btn-add-income">افزودن درآمد +</button>
+                <hr style="border: none; border-top: 1px solid #e5e5ea; margin: 20px 0;">
+                <div class="input-group">
+                    <label for="expense-label">شرح هزینه (اختیاری)</label>
+                    <input type="text" id="expense-label" placeholder="مثلا: ناهار">
+                </div>
+                <div class="input-group">
+                    <label for="expense-amount">مبلغ هزینه (تومان)</label>
+                    <input type="text" id="expense-amount" placeholder="مثلا: ۱۵۰۰۰۰">
+                </div>
+                <button id="btn-add-expense">افزودن هزینه -</button>
+            </section>
+
+            <section class="card" id="report">
+                <h2>📊 گزارش ماه جاری</h2>
+                <p><span>درآمد:</span> <span id="report-income">0 تومان</span></p>
+                <p><span>هزینه:</span> <span id="report-expense">0 تومان</span></p>
+                <p id="balance"><span>تراز (باقیمانده):</span> <span id="report-balance">0 تومان</span></p>
+
+                <div class="backup-section">
+                    <button id="btn-backup" class="btn-secondary">دریافت بکاپ</button>
+                    <button id="btn-restore" class="btn-tertiary">بازیابی بکاپ</button>
+                </div>
+                
+                <div style="margin-top: 10px;">
+                    <button id="btn-reset" class="btn-danger">ریست کل اطلاعات</button>
+                </div>
+
+                <input type="file" id="restore-file-input" accept=".json, .txt" style="display: none;">
+            </section>
+
+            <section class="card" id="goal">
+                <h2>🎯 بودجه و هدف مالی</h2>
+                <label for="financial-goal">هدف یا بودجه‌بندی این ماه خود را بنویسید:</label>
+                <textarea id="financial-goal" placeholder="مثلا: پس‌انداز ۳ میلیون تومان برای سفر..."></textarea>
+            </section>
+
+            <section class="card" id="chart-container">
+                <h2>نمودار هزینه‌ها</h2>
+                <canvas id="expense-chart"></canvas>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // --- متغیر حاوی دیتای پیش‌فرض ---
+        const defaultAppData = {
+            totalIncome: 0,
+            totalExpense: 0,
+            expenseLabels: [],
+            expenseData: []
+        };
+
+        // --------- متغیرهای اصلی (دیتا استور) ---------
+        let appData = { ...defaultAppData };
+
+        // --------- دسترسی به عناصر ---------
+        const incomeAmountInput = document.getElementById('income-amount');
+        const expenseAmountInput = document.getElementById('expense-amount');
+        const expenseLabelInput = document.getElementById('expense-label');
+        const btnAddIncome = document.getElementById('btn-add-income');
+        const btnAddExpense = document.getElementById('btn-add-expense');
+        const reportIncomeEl = document.getElementById('report-income');
+        const reportExpenseEl = document.getElementById('report-expense');
+        const reportBalanceEl = document.getElementById('report-balance');
+        const btnBackup = document.getElementById('btn-backup');
+        const btnRestore = document.getElementById('btn-restore');
+        const restoreFileInput = document.getElementById('restore-file-input');
+        const btnReset = document.getElementById('btn-reset');
+        const API_URL = 'api.php';
+
+        // --------- توابع کمکی (بدون تغییر) ---------
+        function convertToEN(str) {
+            if (!str) return '';
+            str = String(str);
+            // اضافه کردن حذف کاما، چون کاربر ممکن است "1,000" تایپ کند
+            str = str.replace(/,/g, ''); 
+            
+            const persianDigits = /[\u06F0-\u06F9]/g;
+            const arabicDigits = /[\u0660-\u0669]/g;
+            return str.replace(persianDigits, d => d.charCodeAt(0) - 0x06F0)
+                      .replace(arabicDigits, d => d.charCodeAt(0) - 0x0660);
+        }
+
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('fa-IR').format(num) + ' تومان';
+        }
+
+        // --------- توابع اصلی آپدیت UI ---------
+        
+        function updateReport() {
+            const balance = appData.totalIncome - appData.totalExpense;
+            reportIncomeEl.textContent = formatCurrency(appData.totalIncome);
+            reportExpenseEl.textContent = formatCurrency(appData.totalExpense);
+            reportBalanceEl.textContent = formatCurrency(balance);
+            if (balance < 0) reportBalanceEl.style.color = '#FF3B30';
+            else if (balance > 0) reportBalanceEl.style.color = '#34C759';
+            else reportBalanceEl.style.color = '#000';
+        }
+
+        const ctx = document.getElementById('expense-chart').getContext('2d');
+        const expenseChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: appData.expenseLabels,
+                datasets: [{
+                    label: 'هزینه‌ها',
+                    data: appData.expenseData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top' } } }
+        });
+
+        function updateChart() {
+            expenseChart.data.labels = appData.expenseLabels;
+            expenseChart.data.datasets[0].data = appData.expenseData;
+            expenseChart.update();
+        }
+
+        function applyDataToApp(data) {
+            // اطمینان از اینکه دیتای لود شده ساختار درستی دارد
+            appData = { ...defaultAppData, ...data };
+            updateReport();
+            updateChart();
+        }
+
+        // --------- توابع ارتباط با سرور (هاست) ---------
+
+        async function saveDataToServer() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(appData)
+                });
+                const result = await response.json();
+                if(result.status !== 'success') {
+                    console.error('Error saving data:', result.message);
+                }
+            } catch (error) {
+                console.error('Failed to save data:', error);
+            }
+        }
+
+        async function loadDataFromServer() {
+            try {
+                const response = await fetch(API_URL, { method: 'GET' });
+                const data = await response.json();
+                if(data && typeof data.totalIncome === 'number') {
+                    applyDataToApp(data);
+                } else {
+                    applyDataToApp({ ...defaultAppData }); 
+                }
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                applyDataToApp({ ...defaultAppData });
+            }
+        }
+
+        // --------- توابع بکاپ و بازیابی ---------
+
+        function backupData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            const date = new Date().toISOString().split('T')[0];
+            link.download = `daarpool-backup-${date}.json`; // *** تغییر نام بکاپ ***
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function restoreData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = e.target.result;
+                    const restoredData = JSON.parse(json);
+                    if (restoredData && typeof restoredData.totalIncome === 'number') {
+                        applyDataToApp(restoredData);
+                        saveDataToServer(); 
+                        alert('اطلاعات با موفقیت بازیابی شد.');
+                    } else {
+                        alert('فایل بکاپ معتبر نیست.');
+                    }
+                } catch (error) {
+                    alert('خطا در خواندن فایل: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = null;
+        }
+
+        // --------- تابع ریست کردن ---------
+        
+        function resetAllData() {
+            const isConfirmed = confirm("آیا مطمئن هستید؟\nتمام اطلاعات درآمد، هزینه‌ها و نمودارها برای همیشه پاک خواهند شد!");
+            if (isConfirmed) {
+                appData = { ...defaultAppData };
+                applyDataToApp(appData);
+                saveDataToServer();
+                alert("اطلاعات با موفقیت ریست شد.");
+            }
+        }
+
+        // --------- رویدادها (Event Listeners) ---------
+        
+        btnAddIncome.addEventListener('click', () => {
+            // *** استفاده از convertToEN برای خواندن مبلغ ***
+            const amount = parseFloat(convertToEN(incomeAmountInput.value)) || 0;
+            if (amount > 0) {
+                appData.totalIncome += amount;
+                updateReport();
+                incomeAmountInput.value = '';
+                saveDataToServer();
+            }
+        });
+
+        btnAddExpense.addEventListener('click', () => {
+            // *** استفاده از convertToEN برای خواندن مبلغ ***
+            const amount = parseFloat(convertToEN(expenseAmountInput.value)) || 0;
+            const label = expenseLabelInput.value || 'هزینه متفرقه';
+            if (amount > 0) {
+                appData.totalExpense += amount;
+                appData.expenseLabels.push(label);
+                appData.expenseData.push(amount);
+                updateReport();
+                updateChart();
+                expenseAmountInput.value = '';
+                expenseLabelInput.value = '';
+                saveDataToServer();
+            }
+        });
+
+        btnBackup.addEventListener('click', backupData);
+        btnRestore.addEventListener('click', () => restoreFileInput.click());
+        restoreFileInput.addEventListener('change', restoreData);
+        btnReset.addEventListener('click', resetAllData);
+
+        // --------- اجرای اولیه ---------
+        loadDataFromServer();
+
+    </script>
+</body>
+</html>
